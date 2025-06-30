@@ -1,12 +1,14 @@
 library(shiny)
 library(ggplot2)
 library(DT)
-library(rnaturalearth)
+library(dplyr)
+library(sf)
 
 # Wczytywanie danych raz przy starcie serwera
 data_map <- readRDS("data_map.rds")
 data_table <- readRDS("data_table.rds")
 data_future <- readRDS("data_future.rds")
+world_map <- readRDS("data_countries_map.rds")
 
 ui <- fluidPage(
   titlePanel("Geographic access to radiotherapy"),
@@ -64,7 +66,7 @@ server <- function(input, output, session) {
         access_percent = ifelse(is.na(access_percent), 0, access_percent)  # Convert NA to 0
       )
     
-    world <- ne_countries(scale = "medium", returnclass = "sf") %>%
+    world <- world_map %>%
       left_join(country_access, by = c("iso_a3" = "country")) %>%
       mutate(access_percent = ifelse(is.na(access_percent), 0, access_percent))  # Convert NA to 0 again after join
     
@@ -101,7 +103,7 @@ server <- function(input, output, session) {
       st_as_sf(coords = c("lng", "lat"), crs = 4326) %>%
       st_transform(crs = "+proj=robin")
     
-    world <- ne_countries(scale = "medium", returnclass = "sf")
+    world <- world_map
     
     plot_centers <- ggplot() +
       geom_sf(data = world, fill = "white", color = "gray80") +
