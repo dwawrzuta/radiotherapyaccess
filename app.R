@@ -8,6 +8,7 @@ library(sf)
 data_map <- readRDS("data_map.rds")
 data_table <- readRDS("data_table.rds")
 data_future <- readRDS("data_future.rds")
+data_countries <- readRDS("data_countries.rds")
 world_map <- readRDS("data_countries_map.rds")
 
 ui <- fluidPage(
@@ -39,7 +40,10 @@ ui <- fluidPage(
                  DTOutput("futureTable")
                )
              )
-    )
+    ),
+    tabPanel("Countries summary",
+             DTOutput("dataTable_country")
+    ),
   ),
   br(), br(),
   tags$footer(
@@ -126,6 +130,12 @@ server <- function(input, output, session) {
     colnames(df) <- c("Country code", "Latitude", "Longitude", "Population gaining 120-minute access")
     df[[4]] <- floor(df[[4]])  # lub round(df[[4]])
     datatable(df, options = list(pageLength = 10), rownames = FALSE)
+  })
+  
+  output$dataTable_country <- renderDT({
+    df <- data_countries
+    df <- cbind(df[, 1:2], round(df[, 3:8],0), df[, 9:14])
+    datatable(df, options = list(pageLength = 100), rownames = FALSE)
   })
 }
 
